@@ -80,6 +80,25 @@
             (slime-connect "localhost" (match-string 1)))
           (message "No swank found.."))))))
 
+(defun elein-kill-swank ()
+  "Kill swank process started by lein swank."
+  (interactive)
+  (let ((swank-process (get-buffer-process "*elein-swank*")))
+    (when swank-process
+      (ignore-errors (slime-quit-lisp))
+      (let ((timeout elein-swank-timeout))
+        (while (and (> timeout 0) (eql 'run (process-status swank-process)))
+          (message "Waiting for swank to die ..%s.." timeout)
+          (sleep-for 1)
+          (decf timeout))
+        (ignore-errors (kill-buffer "*elein-swank*"))))))
+
+(defun elein-reswank ()
+  "Kill current lisp, restart lein swank and connect slime to it."
+  (interactive)
+  (elein-kill-swank)
+  (elein-swank))
+
 (defun elein-run-task (task)
   "Run 'lein TASK' using `compile' in the project root directory."
   (interactive "sTask: ")
