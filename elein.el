@@ -58,6 +58,16 @@
          (let ((default-directory ,dir)) ,body)
          (error "No leiningen project root found")))))
 
+(defun elein-list-tasks ()
+  (elein-in-project-root
+   (let ((output (shell-command-to-string "lein help"))
+         (result nil)
+         (offset 0))
+    (while (string-match "^  \\(.*\\)" output offset)
+      (setq result (cons (match-string 1 output) result))
+      (setq offset (match-end 0)))
+    (sort result (lambda (a b) (string< a b))))))
+
 (defun elein-swank ()
   "Lauch lein swank and connect slime to it."
   (interactive)
@@ -101,7 +111,7 @@
 
 (defun elein-run-task (task)
   "Run 'lein TASK' using `compile' in the project root directory."
-  (interactive "sTask: ")
+  (interactive (list (completing-read "Task: " (elein-list-tasks))))
   (elein-in-project-root (compile (concat "lein " task))))
 
 (defmacro elein-defun-run-task (task)
