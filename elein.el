@@ -58,15 +58,34 @@
          (let ((default-directory ,dir)) ,body)
          (error "No leiningen project root found")))))
 
+(defvar elein-task-alist nil
+  "Holds cached task list by directory name.  The car of the
+  value is the mtime of the project.clj file and the cdr is the
+  task list itself.")
+
+(defun elein-project-clj-mtime ()
+  "Get mtime from the project.clj in the current project."
+  (nth 5 (elein-in-project-root
+          (file-attributes "project.clj"))))
+
 (defun elein-list-tasks ()
-  (elein-in-project-root
-   (let ((output (shell-command-to-string "lein help"))
-         (result nil)
-         (offset 0))
-    (while (string-match "^  \\(.*\\)" output offset)
-      (setq result (cons (match-string 1 output) result))
-      (setq offset (match-end 0)))
-    (sort result (lambda (a b) (string< a b))))))
+  "Collect tasks for current project."
+  (let* ((root (elein-project-root))
+         (cached (assoc root elein-task-alist)))
+    (if (and cached (equal (elein-project-clj-mtime) (cadr cached)))
+      (cddr cached)
+      (let ((tasks (elein-in-project-root
+                    (let ((output (shell-command-to-string "lein help"))
+                          (result nil)
+                          (offset 0))
+                      (while (string-match "^  \\(.*\\)" output offset)
+                        (setq result (cons (match-string 1 output) result))
+                        (setq offset (match-end 0)))
+                      (sort result (lambda (a b) (string< a b)))))))
+        (setq elein-task-alist (cons (cons root (cons (elein-project-clj-mtime)
+                                                      tasks))
+                                     elein-task-alist))
+        tasks))))
 
 (defun elein-swank ()
   "Lauch lein swank and connect slime to it."
