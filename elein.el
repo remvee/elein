@@ -33,12 +33,6 @@
   :prefix "elein-"
   :group 'applications)
 
-(defcustom elein-swank-timeout
-  10
-  "Number of seconds for swank to come up."
-  :type 'number
-  :group 'elein)
-
 (defun elein-project-root ()
   "Look for project.clj file to find project root."
   (let ((cwd default-directory)
@@ -88,39 +82,28 @@
         tasks))))
 
 (defun elein-swank ()
-  "Lauch lein swank and connect slime to it."
+  "Launch lein swank and connect slime to it."
   (interactive)
   (elein-in-project-root (shell-command "lein swank&" "*elein-swank*"))
-  (with-current-buffer "*elein-swank*"
-    (let ((timeout elein-swank-timeout))
-      (while (and (> timeout 0)
-                  (not (progn (goto-char (point-min))
-                              (search-forward-regexp "Connection opened on local port +\\([0-9]+\\)" nil t)))
-                  (not (progn (goto-char (point-min))
-                              (search-forward "No project.clj found" nil t))))
-        (message "Waiting for swank ..%s.." timeout)
-        (sleep-for 1)
-        (decf timeout))
-      (let ((port (match-string 1)))
-        (if port
-          (progn
-            (goto-char (point-min))
-            (search-forward-regexp "Connection opened on local port +\\([0-9]+\\)")
-            (slime-connect "localhost" (match-string 1)))
-          (message "No swank found.."))))))
+  (set-process-filter (get-buffer-process "*elein-swank*")
+                      (lambda (process output)
+                        (when (string-match "Connection opened on local port +\\([0-9]+\\)" output)
+                          (slime-connect "localhost" (match-string 1 output))
+                          (set-process-filter process nil))))
+  (message "Starting swank.."))
 
 (defun elein-kill-swank ()
   "Kill swank process started by lein swank."
   (interactive)
-  (let ((swank-process (get-buffer-process "*elein-swank*")))
-    (when swank-process
+  (let ((process (get-buffer-process "*elein-swank*")))
+    (when process
       (ignore-errors (slime-quit-lisp))
-      (let ((timeout elein-swank-timeout))
-        (while (and (> timeout 0) (eql 'run (process-status swank-process)))
-          (message "Waiting for swank to die ..%s.." timeout)
-          (sleep-for 1)
-          (decf timeout))
-        (ignore-errors (kill-buffer "*elein-swank*"))))))
+      (let ((timeout 10))
+        (while (and (> timeout 0)
+                    (eql 'run (process-status process)))
+          (sit-for 1)
+          (decf timeout)))
+      (ignore-errors (kill-buffer "*elein-swank*")))))
 
 (defun elein-reswank ()
   "Kill current lisp, restart lein swank and connect slime to it."
