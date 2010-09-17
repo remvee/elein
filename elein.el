@@ -84,13 +84,17 @@
 (defun elein-swank ()
   "Launch lein swank and connect slime to it."
   (interactive)
-  (elein-in-project-root (shell-command "lein swank&" "*elein-swank*"))
-  (set-process-filter (get-buffer-process "*elein-swank*")
-                      (lambda (process output)
-                        (when (string-match "Connection opened on local port +\\([0-9]+\\)" output)
-                          (slime-connect "localhost" (match-string 1 output))
-                          (set-process-filter process nil))))
-  (message "Starting swank.."))
+  (let ((buffer (get-buffer-create  "*elein-swank*")))
+    (flet ((display-buffer (buffer-or-name &optional not-this-window frame) nil))
+      (bury-buffer buffer)
+      (elein-in-project-root (shell-command "lein swank&" buffer)))
+
+    (set-process-filter (get-buffer-process buffer)
+                        (lambda (process output)
+                          (when (string-match "Connection opened on local port +\\([0-9]+\\)" output)
+                            (slime-connect "localhost" (match-string 1 output))
+                            (set-process-filter process nil))))
+    (message "Starting swank..")))
 
 (defun elein-kill-swank ()
   "Kill swank process started by lein swank."
