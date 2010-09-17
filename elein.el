@@ -115,10 +115,15 @@
   (elein-kill-swank)
   (elein-swank))
 
+(defun elein-run-cmd (args)
+  "Run 'lein ARGS' using `compile' in the project root directory."
+  (interactive "sArguments: ")
+  (elein-in-project-root (compile (concat "lein " args))))
+
 (defun elein-run-task (task)
   "Run 'lein TASK' using `compile' in the project root directory."
   (interactive (list (completing-read "Task: " (elein-list-tasks))))
-  (elein-in-project-root (compile (concat "lein " task))))
+  (elein-run-cmd task))
 
 (defmacro elein-defun-run-task (task)
   "Define shortcut function for `elein-run-task' with argument TASK."
