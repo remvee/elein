@@ -124,6 +124,7 @@
 
     (set-process-filter (get-buffer-process buffer)
                         (lambda (process output)
+                          (with-current-buffer elein-swank-buffer-name (insert output))
                           (when (string-match "Connection opened on local port +\\([0-9]+\\)" output)
                             (slime-connect "localhost" (match-string 1 output))
                             (set-process-filter process nil))))
