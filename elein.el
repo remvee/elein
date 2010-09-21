@@ -33,6 +33,31 @@
   :prefix "elein-"
   :group 'applications)
 
+(defcustom elein-lein "lein"
+  "Leiningen 'lein' command."
+  :type 'string
+  :group 'elein)
+
+(defcustom elein-swank-buffer-name "*elein-swank*"
+  "Buffer name for swank process."
+  :type 'string
+  :group 'elein)
+
+(defcustom elein-swank-port 4005
+  "Swank port to listen."
+  :type 'integer
+  :group 'elein)
+
+(defcustom elein-swank-host "127.0.0.1"
+  "Swank address to listen."
+  :type 'string
+  :group 'elein)
+
+(defcustom elein-swank-options ":encoding '\"utf-8\"'"
+  "Swank options."
+  :type 'string
+  :group 'elein)
+
 (defun elein-project-root ()
   "Look for project.clj file to find project root."
   (let ((cwd default-directory)
@@ -69,7 +94,7 @@
     (if (and cached (equal (elein-project-clj-mtime) (cadr cached)))
       (cddr cached)
       (let ((tasks (elein-in-project-root
-                    (let ((output (shell-command-to-string "lein help"))
+                    (let ((output (shell-command-to-string (concat elein-lein " help")))
                           (result nil)
                           (offset 0))
                       (while (string-match "^  \\(.*\\)" output offset)
@@ -81,13 +106,21 @@
                                      elein-task-alist))
         tasks))))
 
+(defun elein-swank-command ()
+  "Build lein swank command from customization variables."
+  (format "%s swank %d %s %s"
+          elein-lein
+          elein-swank-port
+          elein-swank-host
+          elein-swank-options))
+
 (defun elein-swank ()
   "Launch lein swank and connect slime to it."
   (interactive)
-  (let ((buffer (get-buffer-create  "*elein-swank*")))
+  (let ((buffer (get-buffer-create elein-swank-buffer-name)))
     (flet ((display-buffer (buffer-or-name &optional not-this-window frame) nil))
       (bury-buffer buffer)
-      (elein-in-project-root (shell-command "lein swank&" buffer)))
+      (elein-in-project-root (shell-command (concat (elein-swank-command) "&") buffer)))
 
     (set-process-filter (get-buffer-process buffer)
                         (lambda (process output)
@@ -118,7 +151,7 @@
 (defun elein-run-cmd (args)
   "Run 'lein ARGS' using `compile' in the project root directory."
   (interactive "sArguments: ")
-  (elein-in-project-root (compile (concat "lein " args))))
+  (elein-in-project-root (compile (concat elein-lein " " args))))
 
 (defun elein-run-task (task)
   "Run 'lein TASK' using `compile' in the project root directory."
