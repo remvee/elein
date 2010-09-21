@@ -114,6 +114,7 @@
           elein-swank-host
           elein-swank-options))
 
+;;;###autoload
 (defun elein-swank ()
   "Launch lein swank and connect slime to it."
   (interactive)
@@ -130,6 +131,7 @@
                             (set-process-filter process nil))))
     (message "Starting swank..")))
 
+;;;###autoload
 (defun elein-kill-swank ()
   "Kill swank process started by lein swank."
   (interactive)
@@ -143,17 +145,20 @@
           (decf timeout)))
       (ignore-errors (kill-buffer "*elein-swank*")))))
 
+;;;###autoload
 (defun elein-reswank ()
   "Kill current lisp, restart lein swank and connect slime to it."
   (interactive)
   (elein-kill-swank)
   (elein-swank))
 
+;;;###autoload
 (defun elein-run-cmd (args)
   "Run 'lein ARGS' using `compile' in the project root directory."
   (interactive "sArguments: ")
   (elein-in-project-root (compile (concat elein-lein " " args))))
 
+;;;###autoload
 (defun elein-run-task (task)
   "Run 'lein TASK' using `compile' in the project root directory."
   (interactive (list (completing-read "Task: " (elein-list-tasks))))
