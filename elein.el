@@ -126,9 +126,13 @@
     (set-process-filter (get-buffer-process buffer)
                         (lambda (process output)
                           (with-current-buffer elein-swank-buffer-name (insert output))
+
                           (when (string-match "Connection opened on local port +\\([0-9]+\\)" output)
-                            (slime-connect "localhost" (match-string 1 output))
+                            (slime-set-inferior-process
+                             (slime-connect "localhost" (match-string 1 output))
+                             process)
                             (set-process-filter process nil))))
+
     (message "Starting swank..")))
 
 ;;;###autoload
