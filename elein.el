@@ -60,14 +60,8 @@
 
 (defun elein-project-root ()
   "Look for project.clj file to find project root."
-  (let ((cwd default-directory)
-        (found nil)
-        (max 10))
-    (while (and (not found) (> max 0))
-      (if (file-exists-p (concat cwd "project.clj"))
-        (setq found cwd)
-        (setq cwd (concat cwd "../") max (- max 1))))
-    (and found (expand-file-name found))))
+  (let ((found (locate-dominating-file default-directory "project.clj")))
+    (if found (expand-file-name found))))
 
 (defmacro elein-in-project-root (body)
   "Wrap BODY to make `default-directory' the project root."
