@@ -1,10 +1,12 @@
-;;; elein.el -- running leiningen commands from emacs
+;;; elein.el --- running leiningen commands from emacs
 
-;; Copyright (C) 2010 R.W van 't Veer
+;; Copyright (C) 2010, 2011 R.W van 't Veer
 
 ;; Author: R.W. van 't Veer
 ;; Created: 2 Aug 2010
 ;; Keywords: tools processes
+;; Version: 0.1
+;; URL: https://github.com/remvee/elein
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
@@ -26,7 +28,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(eval-when-compile (require 'cl))
 
 (defgroup elein nil
   "running leiningen commands from emacs"
