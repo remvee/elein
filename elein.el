@@ -206,12 +206,9 @@ project."
                 help
                 install
                 jar
-                new
                 pom
-                repl
                 test
                 uberjar
-                upgrade
                 version))
   (eval `(elein-defun-run-task ,(symbol-name task))))
 
