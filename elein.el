@@ -138,7 +138,7 @@ show output and burry the given BUFFER."
 
   (when (string-match "Connection opened on local port +\\([0-9]+\\)" output)
     (slime-set-inferior-process
-     (slime-connect "localhost" (match-string 1 output))
+     (slime-connect "localhost" (string-to-number (match-string 1 output)))
      process)
     (set-process-filter process nil)))
 
