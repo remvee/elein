@@ -136,9 +136,9 @@ show output and burry the given BUFFER."
   "Swank process filter to launch `slime-connect' when process is ready."
   (with-current-buffer elein-swank-buffer-name (insert output))
 
-  (when (string-match "Connection opened on local port +\\([0-9]+\\)" output)
+  (when (string-match "Connection opened on \\(local\\|127.0.0.1\\) port +\\([0-9]+\\)" output)
     (slime-set-inferior-process
-     (slime-connect "localhost" (string-to-number (match-string 1 output)))
+     (slime-connect "localhost" (string-to-number (match-string 2 output)))
      process)
     (set-process-filter process nil)))
 
