@@ -65,6 +65,16 @@
   :type 'string
   :group 'elein)
 
+(defcustom elein-slime-net-coding-system 'utf-8-unix
+  "Coding system used for slime network connections.
+Should match any :encoding specified in `elein-swank-options'.
+See also `slime-net-valid-coding-systems'."
+  :type (cons 'choice
+              (mapcar (lambda (x)
+                        (list 'const (car x)))
+                      slime-net-valid-coding-systems))
+  :group 'elein)
+
 (defun elein-project-root ()
   "Look for project.clj file to find project root."
   (locate-dominating-file default-directory "project.clj"))
@@ -138,7 +148,7 @@ show output and burry the given BUFFER."
 
   (when (string-match "Connection opened on \\(local\\|127.0.0.1\\) port +\\([0-9]+\\)" output)
     (slime-set-inferior-process
-     (slime-connect "localhost" (string-to-number (match-string 2 output)))
+     (slime-connect "localhost" (string-to-number (match-string 2 output)) elein-slime-net-coding-system)
      process)
     (set-process-filter process nil)))
 
