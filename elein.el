@@ -69,10 +69,7 @@
   "Coding system used for slime network connections.
 Should match any :encoding specified in `elein-swank-options'.
 See also `slime-net-valid-coding-systems'."
-  :type (cons 'choice
-              (mapcar (lambda (x)
-                        (list 'const (car x)))
-                      slime-net-valid-coding-systems))
+  :type 'symbol
   :group 'elein)
 
 (defun elein-project-root ()
